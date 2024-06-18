@@ -1,0 +1,2 @@
+Using cloudinary - media management service
+In this proj -> video or img with req, that to be stored in local server(device) and cloudinary

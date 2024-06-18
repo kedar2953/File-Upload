@@ -1,0 +1,86 @@
+install cloudinary package 
+
+make connection to cloudinary 
+
+go to cloudinary website to get the configurations
+cloudinary.config({
+            cloud_name:process.env.CLOUD_NAME,
+            api_key:process.env.API_KEY,
+            api_secret:process.env.API_SECRET
+        })
+
+Uploading file locally 
+    Get the file from req -> in form-data choose file format for Uploading file
+    Atrribute for file should be same in form-data and req.files.Atrribute
+    to get file from req -> use req.files
+
+    to get file type from file -> `.${file.name.split('.')[1].toLowerCase()}`
+
+    create a local path for a file to Upload
+
+    to move the file on given path 
+        file.mv(path , (err) => {
+                console.log(err);
+            });
+
+Uploading to cloudinary 
+    get the file from req, check for supported file types
+
+    cloudinary.uploader.upload(file.tempFilePath, options);
+        options can be folder name on cloudinary 
+        options.quality=60 number denoting quality of file that we want to upload
+        options.resource_type = "auto";  automatically detecting the resouce file type
+
+        save entry in db with imageurl that we get from response from cloudinaryupload
+
+
+pre-middleware -> doing work just before saving data in db
+post-middleware -> doing work just after saving data in db
+
+
+create post-middleware -> created on schema (model files)
+define middleware before creating model from schema
+    import nodemailer
+    create transporter in config file (best practice)
+   .sendMail() method of transporter
+
+let transporter=nodemailer.createTransport({
+    host:process.env.MAIL_HOST, -> smtp.gmail.com  
+    auth:{
+        user:process.env.MAIL_USER, -> email from which we want to send emails to other
+        pass:process.env.MAIL_PASS 
+            //manage account-> security -> turn on 2 step verification -> app passwords -> give name -> generated a 16 length pass 
+    }
+})
+
+
+
+fileSchema.post(
+    //just after the "save" action this post middleware is activated
+    "save",
+    async function (doc){
+        try{
+            //doc -> entry that is created in db -> also has objectId
+            console.log("Doc",doc);
+
+            //transporter using nodemailer - created in config
+            //create hostname , mail user , mail pass in env 
+            
+            //send mail
+
+            let info=await transporter.sendMail({
+                from:`kdwce2022@gmail.com`,
+                to:doc.email,
+                subject:"New file uploaded to cloudinary ",
+                html:`<h1>Hello friend </h1> <p>File is uploaded to cloudinary !
+                <a href="${doc.imageUrl}">View here ${doc.imageUrl}:</a> </p>`
+            })
+            console.log(info);
+            
+
+        }   
+        catch(err){
+            console.error(err);
+        }
+    }
+)
